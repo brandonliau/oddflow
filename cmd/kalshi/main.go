@@ -62,9 +62,9 @@ Run "kalshi <command> -h" for command-specific flags.
 func fetchCmd(args []string) error {
 	fs := flag.NewFlagSet("fetch", flag.ExitOnError)
 	phase := fs.String("phase", "all", "which phase to run: 1, 2, 3, or all")
-	out := fs.String("out", "", "existing run folder to resume into; if empty, a new run folder kalshi/<id> is created")
+	out := fs.String("out", "", "existing run folder to resume into; if empty, a new run folder cmd/kalshi/<id> is created")
 	workers := fs.Int("workers", 4, "concurrent workers for per-ticker fan-out")
-	qps := fs.Int("qps", 3, "max requests per second, shared across workers (raise cautiously; >3 tends to trigger sustained 429s on this host)")
+	rps := fs.Int("rps", 5, "max requests per second, shared across workers")
 	fs.Parse(args)
 
 	switch *phase {
@@ -79,7 +79,7 @@ func fetchCmd(args []string) error {
 		if err != nil {
 			return err
 		}
-		dir = filepath.Join("kalshi", id)
+		dir = filepath.Join("cmd/kalshi", id)
 		log.Printf("created run folder: %s", dir)
 	}
 	if err := os.MkdirAll(filepath.Join(dir, ".checkpoints"), 0o755); err != nil {
@@ -89,7 +89,7 @@ func fetchCmd(args []string) error {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
-	client := NewClient(*qps)
+	client := NewClient(*rps)
 	defer client.Close()
 
 	f := &Fetcher{
@@ -99,7 +99,7 @@ func fetchCmd(args []string) error {
 		workers: *workers,
 	}
 
-	log.Printf("starting fetch: phase=%s dir=%s workers=%d qps=%d", *phase, dir, *workers, *qps)
+	log.Printf("starting fetch: phase=%s dir=%s workers=%d rps=%d", *phase, dir, *workers, *rps)
 	if err := runFetch(ctx, f, *phase); err != nil {
 		if ctx.Err() != nil {
 			log.Printf("interrupted — partial progress saved; resume with: kalshi fetch --phase=%s --out=%s", *phase, dir)

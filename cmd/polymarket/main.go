@@ -62,8 +62,8 @@ Run "polymarket <command> -h" for command-specific flags.
 func fetchCmd(args []string) error {
 	fs := flag.NewFlagSet("fetch", flag.ExitOnError)
 	phase := fs.String("phase", "all", "which phase to run: 1, 2, or all")
-	out := fs.String("out", "", "existing run folder to resume into; if empty, a new run folder polymarket/<id> is created")
-	qps := fs.Int("qps", 5, "max requests per second")
+	out := fs.String("out", "", "existing run folder to resume into; if empty, a new run folder cmd/polymarket/<id> is created")
+	rps := fs.Int("rps", 5, "max requests per second")
 	fs.Parse(args)
 
 	switch *phase {
@@ -78,7 +78,7 @@ func fetchCmd(args []string) error {
 		if err != nil {
 			return err
 		}
-		dir = filepath.Join("polymarket", id)
+		dir = filepath.Join("cmd/polymarket", id)
 		log.Printf("created run folder: %s", dir)
 	}
 	if err := os.MkdirAll(filepath.Join(dir, ".checkpoints"), 0o755); err != nil {
@@ -88,7 +88,7 @@ func fetchCmd(args []string) error {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
-	client := NewClient(*qps)
+	client := NewClient(*rps)
 	defer client.Close()
 
 	f := &Fetcher{
@@ -97,7 +97,7 @@ func fetchCmd(args []string) error {
 		ckptDir: filepath.Join(dir, ".checkpoints"),
 	}
 
-	log.Printf("starting fetch: phase=%s dir=%s qps=%d", *phase, dir, *qps)
+	log.Printf("starting fetch: phase=%s dir=%s rps=%d", *phase, dir, *rps)
 	if err := runFetch(ctx, f, *phase); err != nil {
 		if ctx.Err() != nil {
 			log.Printf("interrupted — partial progress saved; resume with: polymarket fetch --phase=%s --out=%s", *phase, dir)

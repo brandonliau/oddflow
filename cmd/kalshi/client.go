@@ -26,7 +26,7 @@ type tickerFields struct {
 }
 
 // Client is a rate-limited HTTP client. A single shared limiter paces all
-// callers to a target QPS, and a shared pause gate makes every in-flight worker
+// callers to a target RPS, and a shared pause gate makes every in-flight worker
 // back off together when the API returns 429.
 type Client struct {
 	http    *http.Client
@@ -39,12 +39,12 @@ type Client struct {
 	n429 int64
 }
 
-// NewClient builds a client that issues at most qps requests per second.
-func NewClient(qps int) *Client {
-	if qps < 1 {
-		qps = 1
+// NewClient builds a client that issues at most rps requests per second.
+func NewClient(rps int) *Client {
+	if rps < 1 {
+		rps = 1
 	}
-	t := time.NewTicker(time.Second / time.Duration(qps))
+	t := time.NewTicker(time.Second / time.Duration(rps))
 	return &Client{
 		http:    &http.Client{Timeout: 60 * time.Second},
 		limiter: t.C,
