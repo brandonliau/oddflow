@@ -21,7 +21,7 @@ type Fetcher struct {
 }
 
 func eventsParams() url.Values {
-	return url.Values{"limit": {"200"}}
+	return url.Values{"limit": {"200"}, "status": {"open"}}
 }
 
 func marketsParams() url.Values {

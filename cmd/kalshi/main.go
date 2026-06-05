@@ -64,7 +64,7 @@ func fetchCmd(args []string) error {
 	phase := fs.String("phase", "all", "which phase to run: 1, 2, 3, or all")
 	out := fs.String("out", "", "existing run folder to resume into; if empty, a new run folder cmd/kalshi/<id> is created")
 	workers := fs.Int("workers", 4, "concurrent workers for per-ticker fan-out")
-	rps := fs.Int("rps", 5, "max requests per second, shared across workers")
+	rps := fs.Float64("rps", 4, "max requests per second, shared across workers")
 	fs.Parse(args)
 
 	switch *phase {
@@ -99,7 +99,7 @@ func fetchCmd(args []string) error {
 		workers: *workers,
 	}
 
-	log.Printf("starting fetch: phase=%s dir=%s workers=%d rps=%d", *phase, dir, *workers, *rps)
+	log.Printf("starting fetch: phase=%s dir=%s workers=%d rps=%g", *phase, dir, *workers, *rps)
 	if err := runFetch(ctx, f, *phase); err != nil {
 		if ctx.Err() != nil {
 			log.Printf("interrupted — partial progress saved; resume with: kalshi fetch --phase=%s --out=%s", *phase, dir)

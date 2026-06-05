@@ -32,11 +32,11 @@ type Client struct {
 }
 
 // NewClient builds a client that issues at most rps requests per second.
-func NewClient(rps int) *Client {
-	if rps < 1 {
+func NewClient(rps float64) *Client {
+	if rps <= 0 {
 		rps = 1
 	}
-	t := time.NewTicker(time.Second / time.Duration(rps))
+	t := time.NewTicker(time.Duration(float64(time.Second) / rps))
 	return &Client{
 		http:    &http.Client{Timeout: 60 * time.Second},
 		limiter: t.C,

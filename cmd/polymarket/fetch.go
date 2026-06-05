@@ -20,10 +20,10 @@ type Fetcher struct {
 	ckptDir string
 }
 
-// baseParams scopes both listings to active, open markets/events. The keyset
+// baseParams scopes both listings to active markets/events. The keyset
 // endpoints provide their own stable ordering, so no sort params are needed.
 func baseParams() url.Values {
-	return url.Values{"active": {"true"}, "closed": {"false"}}
+	return url.Values{"active": {"true"}}
 }
 
 // eventListItem is the slice of an /events element we extract: the event id and

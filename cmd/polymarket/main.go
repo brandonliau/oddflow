@@ -63,7 +63,7 @@ func fetchCmd(args []string) error {
 	fs := flag.NewFlagSet("fetch", flag.ExitOnError)
 	phase := fs.String("phase", "all", "which phase to run: 1, 2, or all")
 	out := fs.String("out", "", "existing run folder to resume into; if empty, a new run folder cmd/polymarket/<id> is created")
-	rps := fs.Int("rps", 5, "max requests per second")
+	rps := fs.Float64("rps", 4, "max requests per second")
 	fs.Parse(args)
 
 	switch *phase {
@@ -97,7 +97,7 @@ func fetchCmd(args []string) error {
 		ckptDir: filepath.Join(dir, ".checkpoints"),
 	}
 
-	log.Printf("starting fetch: phase=%s dir=%s rps=%d", *phase, dir, *rps)
+	log.Printf("starting fetch: phase=%s dir=%s rps=%g", *phase, dir, *rps)
 	if err := runFetch(ctx, f, *phase); err != nil {
 		if ctx.Err() != nil {
 			log.Printf("interrupted — partial progress saved; resume with: polymarket fetch --phase=%s --out=%s", *phase, dir)
